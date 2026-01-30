@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전광판</title>
+    <link rel="stylesheet" href="/styles.css">
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1947918642488492"
+     crossorigin="anonymous"></script>
+</head>
+<body>
+    <button class="cancel-button" id="cancelButton" onclick="cancelDisplay()">✕ 설정으로</button>
+
+    <div class="input-section" id="inputSection">
+        <div class="input-row">
+            <input type="text" id="textInput" placeholder="전광판에 표시할 텍스트를 입력하세요..." maxlength="100">
+        </div>
+        <div class="input-row">
+            <div class="color-picker-group">
+                <label for="textColor">글자색</label>
+                <input type="color" id="textColor" value="#ffff00">
+            </div>
+            <div class="color-picker-group">
+                <label for="bgColor">배경색</label>
+                <input type="color" id="bgColor" value="#000000">
+            </div>
+            <button onclick="updateText()">표시</button>
+        </div>
+    </div>
+
+    <div class="display-section" id="displaySection">
+        <div class="marquee-container" id="marqueeContainer">
+            <div class="placeholder">↑ 텍스트를 입력하고 '표시'를 눌러주세요</div>
+        </div>
+    </div>
+
+    <script>
+        let currentText = '';
+
+        function updateText() {
+            const input = document.getElementById('textInput');
+            const text = input.value.trim();
+            
+            if (text === '') {
+                alert('텍스트를 입력해주세요!');
+                return;
+            }
+
+            currentText = text;
+            const container = document.getElementById('marqueeContainer');
+            const textColor = document.getElementById('textColor').value;
+            const bgColor = document.getElementById('bgColor').value;
+            
+            // 배경색 변경
+            document.getElementById('displaySection').style.backgroundColor = bgColor;
+            
+            // 텍스트 (반복 없이)
+            container.innerHTML = `<div class="marquee-text" style="color: ${textColor};">${text}</div>`;
+            
+            // 픽셀 기반 속도 계산 (글자 길이와 무관)
+            const marqueeText = container.querySelector('.marquee-text');
+            
+            // 실제 텍스트 너비 측정
+            const textWidth = marqueeText.offsetWidth;
+            
+            // 속도 조절
+            const pixelsPerSecond = 500;
+            
+            // 화면 너비 + 텍스트 너비 전체를 이동하는데 걸리는 시간
+            const screenWidth = window.innerWidth;
+            const totalDistance = screenWidth + textWidth;
+            const duration = totalDistance / pixelsPerSecond;
+            
+            marqueeText.style.animation = `scroll-left ${duration}s linear infinite`;
+
+            // 전체화면 모드로 전환
+            enterFullscreenMode();
+        }
+
+        function enterFullscreenMode() {
+            // 설정 영역 숨기기
+            document.getElementById('inputSection').classList.add('hidden');
+            
+            // 전광판 전체화면
+            const displaySection = document.getElementById('displaySection');
+            displaySection.classList.add('fullscreen');
+            
+            // 취소 버튼 표시
+            document.getElementById('cancelButton').classList.add('visible');
+
+            // 브라우저 전체화면 API 호출
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(err => {
+                    console.log('전체화면 전환 실패:', err);
+                });
+            } else if (elem.webkitRequestFullscreen) { // Safari
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { // IE11
+                elem.msRequestFullscreen();
+            }
+
+            // 화면 가로 고정 시도 (샌드박스 환경에서는 작동 안 함)
+            try {
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(err => {
+                        // 에러 무시 (샌드박스 환경)
+                    });
+                }
+            } catch (err) {
+                // 에러 무시
+            }
+        }
+
+        function cancelDisplay() {
+            // 설정 영역 표시
+            document.getElementById('inputSection').classList.remove('hidden');
+            
+            // 전광판 일반 모드
+            document.getElementById('displaySection').classList.remove('fullscreen');
+            
+            // 취소 버튼 숨기기
+            document.getElementById('cancelButton').classList.remove('visible');
+
+            // 전체화면 해제
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { // Safari
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { // IE11
+                    document.msExitFullscreen();
+                }
+            }
+
+            // 화면 회전 고정 해제
+            try {
+                if (screen.orientation && screen.orientation.unlock) {
+                    screen.orientation.unlock();
+                }
+            } catch (err) {
+                // 에러 무시
+            }
+        }
+
+        // 색상 변경 시 실시간 반영
+        document.getElementById('textColor').addEventListener('input', function(e) {
+            const marqueeText = document.querySelector('.marquee-text');
+            if (marqueeText) {
+                marqueeText.style.color = e.target.value;
+            }
+        });
+
+        document.getElementById('bgColor').addEventListener('input', function(e) {
+            document.getElementById('displaySection').style.backgroundColor = e.target.value;
+        });
+
+        // 엔터키로도 표시
+        document.getElementById('textInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                updateText();
+            }
+        });
+    </script>
+</body>
+</html>
