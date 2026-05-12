@@ -44,6 +44,10 @@
         </div>
     </div>
 
+    <div id="rotateNotice" class="rotate-notice">
+        📱 가로 모드로 돌리면 더 크게 표시됩니다
+    </div>
+
     <script>
         let currentText = '';
 
@@ -99,11 +103,15 @@
             document.getElementById('cancelButton').classList.add('visible');
 
             const isPortrait = window.innerHeight > window.innerWidth;
-
+            
             if (isPortrait) {
+                const notice = document.getElementById('rotateNotice');
+            
+                notice.classList.add('visible');
+            
                 setTimeout(() => {
-                    alert("가로 모드로 돌리면 더 크게 표시됩니다.");
-                }, 300);
+                    notice.classList.remove('visible');
+                }, 3000);
             }
 
             // iOS 여부 확인
