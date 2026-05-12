@@ -98,6 +98,14 @@
             // 취소 버튼 표시
             document.getElementById('cancelButton').classList.add('visible');
 
+            const isPortrait = window.innerHeight > window.innerWidth;
+
+            if (isPortrait) {
+                setTimeout(() => {
+                    alert("가로 모드로 돌리면 더 크게 표시됩니다.");
+                }, 300);
+            }
+
             // iOS 여부 확인
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
             
